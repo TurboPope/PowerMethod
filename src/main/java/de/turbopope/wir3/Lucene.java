@@ -20,13 +20,15 @@ import org.apache.lucene.store.RAMDirectory;
 import java.io.*;
 
 public class Lucene {
-    private static int limit = 1000;
+    private static int limit = -1;
 
     public static void main(String[] args) throws IOException, ParseException {
         Analyzer analyzer = new StandardAnalyzer();
         Directory directory = new RAMDirectory();
         //Directory directory = FSDirectory.open("/tmp/testindex");
 
+        System.out.println("Building index...");
+        long ping = System.currentTimeMillis();
         BufferedReader articleReader = new BufferedReader(new FileReader(new File("ARTICLES.txt")));
         String line;
         IndexWriter indexWriter = new IndexWriter(directory, new IndexWriterConfig(analyzer));
@@ -41,14 +43,15 @@ public class Lucene {
                 document.add(new Field("body", body, TextField.TYPE_STORED));
                 document.add(new Field("title", title, TextField.TYPE_STORED));
                 indexWriter.addDocument(document);
-                if (--limit == 0) {
+                if (limit != -1 &&-- limit == 0) {
                     break;
                 }
             } catch (ArrayIndexOutOfBoundsException e) {
-                System.err.println("Skipping broken line");
+                // TODO: Why are so many articles broken?
             }
         }
         indexWriter.close();
+        System.out.printf("%nBuilt index in %sms%n%n", System.currentTimeMillis() - ping);
 
         DirectoryReader directoryReader = DirectoryReader.open(directory);
         IndexSearcher indexSearcher = new IndexSearcher(directoryReader);
@@ -62,9 +65,13 @@ public class Lucene {
 
             ScoreDoc[] hits = indexSearcher.search(query, null, 1000).scoreDocs;
 
+            int c = 1;
             for (ScoreDoc hit : hits) {
                 Document hitDoc = indexSearcher.doc(hit.doc);
-                System.out.println("hitDoc = " + hitDoc.get("title"));
+                System.out.printf("%s: %s%n", c++, hitDoc.get("title"));
+                if (c > 10) {
+                    break;
+                }
             }
             System.out.println(hits.length + " results.");
             System.out.println();
