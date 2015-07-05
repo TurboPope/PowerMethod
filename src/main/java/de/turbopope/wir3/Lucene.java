@@ -92,10 +92,6 @@ public class Lucene {
                 result.add(new QueryResult(scoreDoc.score, indexSearcher.doc(scoreDoc.doc).get("title").replaceAll("\\s", "_")));
             }
 
-            for (QueryResult queryResult : sort(result)) {
-                System.out.println(queryResult);
-            }
-
             HashMap<String, Integer> localPageRanks = getLocalPageRanks(result, pageRanks);
             for (QueryResult queryResult : result) {
                 try {
