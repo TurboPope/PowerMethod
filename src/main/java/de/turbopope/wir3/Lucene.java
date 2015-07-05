@@ -14,6 +14,7 @@ import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
+import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.RAMDirectory;
 
@@ -25,7 +26,6 @@ public class Lucene {
     public static void main(String[] args) throws IOException, ParseException {
         Analyzer analyzer = new StandardAnalyzer();
         Directory directory = new RAMDirectory();
-        //Directory directory = FSDirectory.open("/tmp/testindex");
 
         System.out.println("Building index...");
         long ping = System.currentTimeMillis();
@@ -63,17 +63,18 @@ public class Lucene {
         while (!(in = stdReader.readLine()).equals("")) {
             Query query = queryParser.parse(in);
 
-            ScoreDoc[] hits = indexSearcher.search(query, null, 1000).scoreDocs;
+            TopDocs topDocs = indexSearcher.search(query, 10);
+            ScoreDoc[] scoreDocs = topDocs.scoreDocs;
 
             int c = 1;
-            for (ScoreDoc hit : hits) {
-                Document hitDoc = indexSearcher.doc(hit.doc);
-                System.out.printf("%s: %s%n", c++, hitDoc.get("title"));
+            for (ScoreDoc scoreDoc : scoreDocs) {
+                Document hitDoc = indexSearcher.doc(scoreDoc.doc);
+                System.out.printf("%s (%f): %s%n", c++, scoreDoc.score, hitDoc.get("title"));
                 if (c > 10) {
                     break;
                 }
             }
-            System.out.println(hits.length + " results.");
+            System.out.println(scoreDocs.length + " results.");
             System.out.println();
             System.out.print("Query: ");
         }
