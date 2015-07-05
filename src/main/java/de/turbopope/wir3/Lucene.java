@@ -19,7 +19,7 @@ import org.apache.lucene.store.RAMDirectory;
 
 import java.io.IOException;
 
-public class Main {
+public class Lucene {
     private static final String[] lines = new String[]{
             "Hello my name is Jonas",
             "This is a document",
