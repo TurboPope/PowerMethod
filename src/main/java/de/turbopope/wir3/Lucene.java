@@ -20,6 +20,7 @@ import org.apache.lucene.store.RAMDirectory;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.TreeSet;
 
@@ -62,7 +63,7 @@ public class Lucene {
         // Get the page ranks
         System.out.println("Reading page ranks...");
         ping = System.currentTimeMillis();
-        BufferedReader ranksReader = new BufferedReader(new FileReader(new File("dummy_ranks")));
+        BufferedReader ranksReader = new BufferedReader(new FileReader(new File("RANKING")));
         String rankLine;
         ArrayList<String> pageRanks = new ArrayList<String>();
         while((rankLine = ranksReader.readLine()) != null) {
@@ -115,6 +116,7 @@ public class Lucene {
 
     private static HashMap<String, Integer> getLocalPageRanks(TreeSet<QueryResult> queryResults, ArrayList<String> pageRanks) {
         HashMap<String, Integer> localPageRanks = new HashMap<String, Integer>();
+        Collections.reverse(pageRanks);
 
         ArrayList<String> titles = new ArrayList<String>();
         for (QueryResult queryResult : queryResults) {
