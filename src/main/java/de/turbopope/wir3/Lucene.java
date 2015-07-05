@@ -17,62 +17,61 @@ import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.RAMDirectory;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 
 public class Lucene {
-    private static final String[] lines = new String[]{
-            "Hello my name is Jonas",
-            "This is a document",
-            "Apple Apple Apple Banana",
-            "Apple Banana",
-            "Test document, pleas don't upvote",
-            "DAE index their documents with lucene?"
-    };
-    private static int limit = 4;
+    private static int limit = 1000;
 
     public static void main(String[] args) throws IOException, ParseException {
         Analyzer analyzer = new StandardAnalyzer();
         Directory directory = new RAMDirectory();
         //Directory directory = FSDirectory.open("/tmp/testindex");
 
+        BufferedReader articleReader = new BufferedReader(new FileReader(new File("ARTICLES.txt")));
+        String line;
         IndexWriter indexWriter = new IndexWriter(directory, new IndexWriterConfig(analyzer));
-        for (String line : lines) {
-            Document document = new Document();
-            document.add(new Field("text", line, TextField.TYPE_STORED));
-            indexWriter.addDocument(document);
-            if (--limit == 0) {
-                break;
+        while((line = articleReader.readLine()) != null) {
+            String[] splitted = line.split("\\t");
+
+            try {
+                String title = splitted[0];
+                String body = splitted[1];
+
+                Document document = new Document();
+                document.add(new Field("body", body, TextField.TYPE_STORED));
+                document.add(new Field("title", title, TextField.TYPE_STORED));
+                indexWriter.addDocument(document);
+                if (--limit == 0) {
+                    break;
+                }
+            } catch (ArrayIndexOutOfBoundsException e) {
+                System.err.println("Skipping broken line");
             }
         }
         indexWriter.close();
 
         DirectoryReader directoryReader = DirectoryReader.open(directory);
         IndexSearcher indexSearcher = new IndexSearcher(directoryReader);
-        QueryParser queryParser = new QueryParser("text", analyzer);
-        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        QueryParser queryParser = new QueryParser("body", analyzer);
+        BufferedReader stdReader = new BufferedReader(new InputStreamReader(System.in));
 
         String in;
         System.out.print("Query: ");
-        while ((in = br.readLine()) != null) {
+        while (!(in = stdReader.readLine()).equals("")) {
             Query query = queryParser.parse(in);
 
             ScoreDoc[] hits = indexSearcher.search(query, null, 1000).scoreDocs;
 
             for (ScoreDoc hit : hits) {
                 Document hitDoc = indexSearcher.doc(hit.doc);
-                System.out.println("hitDoc = " + hitDoc);
+                System.out.println("hitDoc = " + hitDoc.get("title"));
             }
+            System.out.println(hits.length + " results.");
             System.out.println();
             System.out.print("Query: ");
         }
 
         directoryReader.close();
         directory.close();
-    }
-
-    private static void readArticles(int limit) throws IOException {
-
     }
 }
