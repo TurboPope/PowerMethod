@@ -17,7 +17,9 @@ import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.RAMDirectory;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 
 public class Lucene {
     private static final String[] lines = new String[]{
@@ -28,37 +30,49 @@ public class Lucene {
             "Test document, pleas don't upvote",
             "DAE index their documents with lucene?"
     };
+    private static int limit = 4;
 
     public static void main(String[] args) throws IOException, ParseException {
         Analyzer analyzer = new StandardAnalyzer();
         Directory directory = new RAMDirectory();
         //Directory directory = FSDirectory.open("/tmp/testindex");
-        IndexWriter iwriter = new IndexWriter(directory, new IndexWriterConfig(analyzer));
 
+        IndexWriter indexWriter = new IndexWriter(directory, new IndexWriterConfig(analyzer));
         for (String line : lines) {
             Document document = new Document();
             document.add(new Field("text", line, TextField.TYPE_STORED));
-            iwriter.addDocument(document);
+            indexWriter.addDocument(document);
+            if (--limit == 0) {
+                break;
+            }
         }
-        iwriter.close();
+        indexWriter.close();
 
-        DirectoryReader ireader = DirectoryReader.open(directory);
-        IndexSearcher isearcher = new IndexSearcher(ireader);
+        DirectoryReader directoryReader = DirectoryReader.open(directory);
+        IndexSearcher indexSearcher = new IndexSearcher(directoryReader);
+        QueryParser queryParser = new QueryParser("text", analyzer);
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 
-        // Parse a simple query that searches for "text":
-        QueryParser parser = new QueryParser("text", analyzer);
-        Query query = parser.parse("Apple");
+        String in;
+        System.out.print("Query: ");
+        while ((in = br.readLine()) != null) {
+            Query query = queryParser.parse(in);
 
-        ScoreDoc[] hits = isearcher.search(query, null, 1000).scoreDocs;
+            ScoreDoc[] hits = indexSearcher.search(query, null, 1000).scoreDocs;
 
-        for (ScoreDoc hit : hits) {
-            Document hitDoc = isearcher.doc(hit.doc);
-            System.out.println("hitDoc = " + hitDoc);
+            for (ScoreDoc hit : hits) {
+                Document hitDoc = indexSearcher.doc(hit.doc);
+                System.out.println("hitDoc = " + hitDoc);
+            }
+            System.out.println();
+            System.out.print("Query: ");
         }
 
-        ireader.close();
+        directoryReader.close();
         directory.close();
     }
 
+    private static void readArticles(int limit) throws IOException {
 
+    }
 }
