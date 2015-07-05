@@ -1,0 +1,12 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+
+while (<>)
+{
+    chomp;
+    if (/^\s*(\S+)\s+(\S+)\s*$/)
+    {   print "$1\n$2\n" }
+    else
+    {   warn "ignoring malformed line $. in $ARGV: '$_'\n" }
+}
