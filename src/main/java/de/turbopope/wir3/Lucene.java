@@ -19,10 +19,7 @@ import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.RAMDirectory;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.TreeSet;
+import java.util.*;
 
 public class Lucene {
     private static int ARTICLE_LIMIT = -1; // Set to -1 fo no limit
@@ -87,6 +84,9 @@ public class Lucene {
 
             TopDocs topDocs = indexSearcher.search(query, RESULTS_LIMIT);
             ScoreDoc[] scoreDocs = topDocs.scoreDocs;
+//            for (ScoreDoc scoreDoc : scoreDocs) {
+//                System.out.println(indexSearcher.doc(scoreDoc.doc));
+//            }
 
             TreeSet<QueryResult> result = new TreeSet<QueryResult>();
             for (ScoreDoc scoreDoc : scoreDocs) {
