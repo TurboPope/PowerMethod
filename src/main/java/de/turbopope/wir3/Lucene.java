@@ -50,11 +50,11 @@ public class Lucene {
                     break;
                 }
             } catch (ArrayIndexOutOfBoundsException e) {
-                // TODO: Why are so many articles broken?
+                //System.err.println(articleLine);
             }
         }
         indexWriter.close();
-        System.out.printf("%nBuilt index in %sms%n%n", System.currentTimeMillis() - ping);
+        System.out.printf("Built index in %sms%n%n", System.currentTimeMillis() - ping);
 
 
         // Get the page ranks
@@ -66,7 +66,7 @@ public class Lucene {
         while((rankLine = ranksReader.readLine()) != null) {
             pageRanks.add(rankLine);
         }
-        System.out.printf("%nRead page ranks in %sms%n%n", System.currentTimeMillis() - ping);
+        System.out.printf("Read page ranks in %sms%n%n", System.currentTimeMillis() - ping);
 
 
         // Prepare querying
@@ -86,6 +86,7 @@ public class Lucene {
             ScoreDoc[] scoreDocs = topDocs.scoreDocs;
 //            for (ScoreDoc scoreDoc : scoreDocs) {
 //                System.out.println(indexSearcher.doc(scoreDoc.doc));
+//                System.out.println(indexSearcher.explain(query, scoreDoc.doc));
 //            }
 
             TreeSet<QueryResult> result = new TreeSet<QueryResult>();
@@ -98,12 +99,13 @@ public class Lucene {
                 try {
                     queryResult.score *= localPageRanks.get(queryResult.title);
                 } catch (NullPointerException e) {
-                    System.err.println(queryResult.title + " was not found in page ranks. Assuming rank 1.");
+                    //System.err.println(queryResult.title + " was not found in page ranks. Assuming rank 1.");
                 }
             }
 
             for (QueryResult queryResult : sort(result)) {
                 System.out.println(queryResult);
+
             }
 
             System.out.println();
