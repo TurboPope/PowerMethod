@@ -9,7 +9,7 @@
 
 
 static constexpr unsigned int NTHREADS   = 4;
-static constexpr unsigned int ITERATIONS = 4;
+static constexpr unsigned int ITERATIONS = 8;
 static double alpha = 0.1;
 static std::unordered_map<std::string, unsigned int>  name_to_id;
 static std::vector<std::pair<std::string, double> >   ranks;
@@ -115,6 +115,6 @@ int main()
 
     std::sort(ranks.begin(), ranks.end(), comp);
     for (const auto& r : ranks)
-        std::cout << r.first << '\n';
+        std::cout << r.first << '\t' << r.second << '\n';
     return 0;
 }
